@@ -38,6 +38,3 @@ out/
 
 # macOS specific files
 .DS_Store
-
-# Properties files
-*.properties
