@@ -27,9 +27,26 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.corundumstudio.socketio:netty-socketio:2.0.9'
+	//webSocket
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	//jdbc
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	//jpa
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	//validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	//log
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
+	//security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
+	//MongoDB
+//	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+//	testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
+
+
 }
 
 tasks.named('test') {
