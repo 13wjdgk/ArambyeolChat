@@ -62,8 +62,8 @@ public class ChatController {
 	}
 
 	@GetMapping("/chatList")
-	public ResponseEntity<SuccessSingleResponse<List<MainChat>>> getUserNickname(@RequestParam LocalDateTime start ,int page,int size){
-		List<MainChat> mainChatList = chatService.findRecentChatMessage(start,page,size);
-		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), mainChatList));
+	public ResponseEntity<SuccessSingleResponse<List<ReceiveMessage>>> getUserNickname(@RequestParam LocalDateTime start ,int page,int size){
+		List<ReceiveMessage> chatList = chatService.findRecentChatMessage(start,page,size);
+		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), chatList));
 	}
 }
