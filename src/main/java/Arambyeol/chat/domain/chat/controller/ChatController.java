@@ -60,4 +60,10 @@ public class ChatController {
 		log.info("message 전달 : "+receiveMessage.toString());
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), receiveMessage));
 	}
+
+	@GetMapping("/chatList")
+	public ResponseEntity<SuccessSingleResponse<List<MainChat>>> getUserNickname(@RequestParam LocalDateTime start ,int page,int size){
+		List<MainChat> mainChatList = chatService.findRecentChatMessage(start,page,size);
+		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), mainChatList));
+	}
 }

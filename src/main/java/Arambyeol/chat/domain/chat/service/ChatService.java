@@ -32,5 +32,8 @@ public class ChatService {
 		return mongoTemplate.save(MainChat.builder().message(message).sederNickname(sederNickname).senderDid(senderDid).sendTime(sendTime).build());
 	}
 
-
+	public List<MainChat> findRecentChatMessage(LocalDateTime start,int page, int size){
+		Query query = new Query().addCriteria(Criteria.where("sendTime").lte(start)).with(Sort.by(Sort.Direction.DESC,"sendTime")).skip((page-1)*size).limit(size);
+		return mongoTemplate.find(query,MainChat.class);
+	}
 }
