@@ -1,13 +1,31 @@
 package Arambyeol.chat.domain.chat.entity;
 
 
-import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 
-// @Document(collation = "MainChat")
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import Arambyeol.chat.domain.chat.dto.ReceiveMessage;
+import jakarta.persistence.Id;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Document
 public class MainChat {
 	@Id
-	private String chatId;
+	private String id;
 	private String senderDid;
+	private String message;
 	private String sederNickname;
-	private String sendTime;
+	private LocalDateTime sendTime;
+
+	@Builder
+	public MainChat(String senderDid, String message, String sederNickname, LocalDateTime sendTime){
+		this.senderDid = senderDid;
+		this.sederNickname = sederNickname;
+		this.sendTime = sendTime;
+		this.message = message;
+
+	}
 }

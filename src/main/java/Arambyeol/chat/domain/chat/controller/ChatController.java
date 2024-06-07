@@ -1,6 +1,7 @@
 package Arambyeol.chat.domain.chat.controller;
 
-import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,18 +14,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import Arambyeol.chat.domain.chat.dto.ReceiveMessage;
 import Arambyeol.chat.domain.chat.dto.ReportChat;
-import Arambyeol.chat.domain.chat.dto.Response;
 import Arambyeol.chat.domain.chat.dto.SendMessage;
 import Arambyeol.chat.domain.chat.dto.SuccessSingleResponse;
 import Arambyeol.chat.domain.chat.entity.DeviceInfo;
+import Arambyeol.chat.domain.chat.entity.MainChat;
 import Arambyeol.chat.domain.chat.entity.Report;
-import Arambyeol.chat.domain.chat.enums.Status;
 import Arambyeol.chat.domain.chat.service.ChatService;
 import Arambyeol.chat.domain.chat.service.DeviceInfoService;
 import Arambyeol.chat.domain.chat.service.ReportService;
@@ -54,21 +53,11 @@ public class ChatController {
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), null));
 	}
 
-	// @MessageMapping("/chat")
-	// public void chat(@RequestBody SendMessage message , Principal principal ){
-	// 	String sessionId = principal.getName();
-	// 	log.info("Session ID 처음 : " + sessionId);
-	// 	ReceiveMessage receiveMessage = chatService.makeChatMessage(message);
-	// 	log.info("message 전달 : "+receiveMessage.toString());
-	// 	sessionId = principal.getName();
-	// 	log.info("Session ID 중간 : " + sessionId);
-	// 	simpMessagingTemplate.convertAndSend("/sub/ArambyeolChat","메세지가냐고");
-	// 	sessionId = principal.getName();
-	// 	log.info("Session ID 보내고 나서: " + sessionId);
-	// }
 	@MessageMapping("/chat")
 	@SendTo("/sub/ArambyeolChat")
-	public Response chat(@RequestBody SendMessage message ){
-		return new Response(Status.SUCCESS,message,null);
+	public ResponseEntity<SuccessSingleResponse<ReceiveMessage>> chat(@RequestBody SendMessage message ){
+		ReceiveMessage receiveMessage = chatService.createChatMessage(message);
+		log.info("message 전달 : "+receiveMessage.toString());
+		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), receiveMessage));
 	}
 }
