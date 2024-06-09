@@ -13,3 +13,8 @@ create table report(
    primary key (reporter_did,chat_id),
    foreign key (reporter_did) references device_info(device_id) on update cascade
 );
+
+CREATE TABLE IF NOT EXISTS Prefixes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    prefix VARCHAR(255) NOT NULL
+);
