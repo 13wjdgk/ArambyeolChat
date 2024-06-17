@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +24,6 @@ import Arambyeol.chat.domain.chat.dto.ReportChat;
 import Arambyeol.chat.domain.chat.dto.SendMessage;
 import Arambyeol.chat.domain.chat.dto.SuccessSingleResponse;
 import Arambyeol.chat.domain.chat.entity.DeviceInfo;
-import Arambyeol.chat.domain.chat.entity.MainChat;
 import Arambyeol.chat.domain.chat.entity.Report;
 import Arambyeol.chat.domain.chat.service.ChatService;
 import Arambyeol.chat.domain.chat.service.DeviceInfoService;
@@ -41,9 +42,10 @@ public class ChatController {
 	private final DeviceInfoService deviceInfoService;
 	private final ReportService reportService;
 	private final ChatService chatService;
+
 	@GetMapping("/nickname")
-	public ResponseEntity<SuccessSingleResponse<DeviceInfo>> getUserNickname(@RequestParam String deviceId){
-		DeviceInfo deviceInfo = deviceInfoService.getNickname(deviceId);
+	public ResponseEntity<SuccessSingleResponse<DeviceInfo>> getUserNickname(@AuthenticationPrincipal UserDetails userDetails){
+		DeviceInfo deviceInfo = deviceInfoService.getNickname(userDetails.getUsername());
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), deviceInfo));
 	}
 

@@ -1,41 +1,41 @@
 package Arambyeol.chat.global.security;
 
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import Arambyeol.chat.global.jwt.CustomUserDetailsService;
+import Arambyeol.chat.global.jwt.JwtAuthFilter;
+import Arambyeol.chat.global.jwt.JwtTokenUtil;
+import lombok.RequiredArgsConstructor;
+
+@EnableWebSecurity
+@Configuration
+@EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
+	private final CustomUserDetailsService customUserDetailsService;
+	private final JwtTokenUtil jwtTokenUtil;
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
 		httpSecurity
-			//.cross site Request forgery 거부
-			.headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.frameOptions(
-				HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 			.csrf(AbstractHttpConfigurer::disable)
-			.formLogin(AbstractHttpConfigurer::disable)
+			.cors(Customizer.withDefaults())
+			.formLogin((formLogin) -> formLogin.disable())
 			.httpBasic(AbstractHttpConfigurer::disable)
+			.addFilterBefore(new JwtAuthFilter(customUserDetailsService,jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/ArambyeolChat/**").permitAll()
+				.requestMatchers("/login").permitAll()
+				.requestMatchers("/generateAccessToken").permitAll()
+				.anyRequest().authenticated()
 			);
 		return httpSecurity.build();
 	}
-	@Bean
-	public CorsConfigurationSource configurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("*"));
-		configuration.setAllowedMethods(List.of("*"));
-		configuration.setAllowedHeaders(List.of("*", "Authorization"));
-		configuration.setAllowCredentials(true);
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
+
 }

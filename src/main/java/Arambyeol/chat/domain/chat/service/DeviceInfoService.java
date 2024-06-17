@@ -2,11 +2,9 @@ package Arambyeol.chat.domain.chat.service;
 
 import org.springframework.stereotype.Service;
 
-import Arambyeol.chat.domain.chat.dto.NicknameResponse;
 import Arambyeol.chat.domain.chat.entity.DeviceInfo;
 import Arambyeol.chat.domain.chat.repository.DeviceInfoRepository;
 import Arambyeol.chat.domain.chat.repository.PrefixesRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.util.NoSuchElementException;
