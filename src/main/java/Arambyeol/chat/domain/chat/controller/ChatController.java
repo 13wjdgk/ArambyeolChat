@@ -45,7 +45,7 @@ public class ChatController {
 
 	@GetMapping("/nickname")
 	public ResponseEntity<SuccessSingleResponse<DeviceInfo>> getUserNickname(@AuthenticationPrincipal UserDetails userDetails){
-		DeviceInfo deviceInfo = deviceInfoService.getNickname(userDetails.getUsername());
+		DeviceInfo deviceInfo = deviceInfoService.getDeviceInfo(userDetails.getUsername());
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), deviceInfo));
 	}
 

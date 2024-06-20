@@ -15,18 +15,17 @@ import java.util.Random;
 public class DeviceInfoService {
 	private final DeviceInfoRepository deviceInfoRepository;
 	private final PrefixesRepository prefixesRepository;
-	private String[] characters = new String[]{"금이","지누","아람이","긱사생","별이","동식이"};
+	private final String[] characters = new String[]{"금이","지누","아람이","긱사생","별이","동식이"};
 
-	public DeviceInfo getNickname(String deviceId){
-		DeviceInfo deviceInfo;
-		try{
-			deviceInfo = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new NoSuchElementException("No value deviceInfo"));
-		}catch (NoSuchElementException e){
-			String nickname = createNickname();
-			deviceInfo = deviceInfoRepository.save(DeviceInfo.builder().deviceId(deviceId).nickname(nickname).build());
-		}
+	public DeviceInfo getDeviceInfo(String deviceId){
+		DeviceInfo deviceInfo = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new NoSuchElementException("No value deviceInfo"));
 		return deviceInfo;
 
+	}
+	public DeviceInfo saveDeviceInfo(String deviceId){
+		String nickname = createNickname();
+		DeviceInfo deviceInfo = DeviceInfo.builder().deviceId(deviceId).nickname(nickname).build();
+		return deviceInfoRepository.save(deviceInfo);
 	}
 	public String createNickname() {
 		Random random = new Random();

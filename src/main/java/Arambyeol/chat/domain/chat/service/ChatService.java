@@ -2,7 +2,6 @@ package Arambyeol.chat.domain.chat.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class ChatService {
 	private final ReceiveMessageMapper receiveMessageMapper;
 	private final DeviceInfoService deviceInfoService;
 	public ReceiveMessage createChatMessage(SendMessage message){
-		String nickname = deviceInfoService.getNickname(message.senderDid()).getNickname();
+		String nickname = deviceInfoService.getDeviceInfo(message.senderDid()).getNickname();
 		MainChat chat = saveChatMessage(message.senderDid(),message.message(),nickname,message.sendTime());
 		return new ReceiveMessage(message,nickname,chat.getId());
 	}
