@@ -33,6 +33,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers("/login").permitAll()
 				.requestMatchers("/generateAccessToken").permitAll()
+				.requestMatchers("/signUp").permitAll()
 				.anyRequest().authenticated()
 			);
 		return httpSecurity.build();
