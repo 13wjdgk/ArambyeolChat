@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
-	private final CustomUserDetailsService customUserDetailsService;
 	private final JwtTokenUtil jwtTokenUtil;
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
@@ -29,11 +28,12 @@ public class SecurityConfig {
 			.cors(Customizer.withDefaults())
 			.formLogin((formLogin) -> formLogin.disable())
 			.httpBasic(AbstractHttpConfigurer::disable)
-			.addFilterBefore(new JwtAuthFilter(customUserDetailsService,jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(new JwtAuthFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers("/login").permitAll()
 				.requestMatchers("/generateAccessToken").permitAll()
 				.requestMatchers("/signUp").permitAll()
+				.requestMatchers("/ws-stomp").permitAll()
 				.anyRequest().authenticated()
 			);
 		return httpSecurity.build();

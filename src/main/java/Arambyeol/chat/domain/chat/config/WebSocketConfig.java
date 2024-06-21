@@ -7,6 +7,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import Arambyeol.chat.global.security.JwtChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
+	private final JwtChannelInterceptor jwtChannelInterceptor;
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry registry){
 		//해당 prefix를 구독하는 클라이언트에세 메세지를 보낸다.
@@ -29,6 +30,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 			.setAllowedOrigins("*");
 	}
 
+	@Override
+	public void configureClientInboundChannel(ChannelRegistration registration) {
+		registration.interceptors(jwtChannelInterceptor);
+	}
 
 
 }
