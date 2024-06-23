@@ -1,4 +1,4 @@
-package Arambyeol.chat.domain.chat.dto;
+package Arambyeol.chat.global.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
