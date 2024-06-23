@@ -3,6 +3,8 @@ package Arambyeol.chat.global.jwt;
 import java.security.Key;
 import java.util.Date;
 
+
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,46 +36,53 @@ public class JwtTokenUtil {
 	}
 
 	public String createAccessToken(String deviceId) {
+		Date exp = new Date(System.currentTimeMillis() + accessTokenExpTime);
 		return Jwts.builder()
 				.setSubject(deviceId)
-				.setExpiration(new Date(System.currentTimeMillis() + accessTokenExpTime))
+				.setExpiration(exp)
 				.signWith(key, SignatureAlgorithm.HS256)
 				.compact();
 	}
 	public String createRefreshToken(String deviceId) {
+		Date exp = new Date(System.currentTimeMillis() + refreshTokenExpTime);
 		return Jwts.builder()
 			.setSubject(deviceId)
-			.setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpTime))
+			.setExpiration(exp)
 			.signWith(key, SignatureAlgorithm.HS256)
 			.compact();
 	}
 	public String getDeviceId(String token) {
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
 	}
-	public boolean validateToken(String token) {
+	public JwtStatus validateToken(String token) {
 		try {
 			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-			return true;
+			return JwtStatus.VALID;
+		} catch (SignatureException e){
+			log.info("Invalid JWT signature",e);
+			return JwtStatus.INVALID;
 		} catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
 			log.info("Invalid JWT Token",e);
-			return false;
+			return JwtStatus.INVALID;
 		} catch (io.jsonwebtoken.ExpiredJwtException e) {
 			log.info("Expired JWT Token",e);
-			return false;
+			return JwtStatus.EXPIRED;
 		} catch (io.jsonwebtoken.UnsupportedJwtException e) {
 			log.info("Unsupported JWT Token",e);
-			return false;
+			return JwtStatus.INVALID;
 		} catch (IllegalArgumentException e) {
 			log.info("JWT claims string is empty",e);
-			return false;
+			return JwtStatus.INVALID;
 		}
 	}
-	public void isValidToken(String token) {
+	public JwtStatus isValidToken(String token) {
+		JwtStatus status;
 		if(token != null && token.startsWith("Bearer")) {
 			log.info("Request JwtAuthFilter -- token : ", token);
 			//TODO 토큰 검증
 			String accessToken = token.substring(7);
-			if(validateToken(accessToken)) {
+			status = validateToken(accessToken);
+			if(status.equals(JwtStatus.VALID)) {
 				String deviceId = getDeviceId(accessToken);
 				//토큰에서 정보 검증 및 UserDetailsService를 통해 정보 가져오기
 				UserDetails userDetails = customUserDetailsService.loadUserByUsername(deviceId);
@@ -82,10 +91,14 @@ public class JwtTokenUtil {
 					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 					//SecurityContextHolder에 인증 정보 저장
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
 				}
 			}
+			return status;
 		}else{
 			log.info("Request JwtAuthFilter -- token is invalid");
+			return JwtStatus.INVALID;
 		}
+
 	}
 }

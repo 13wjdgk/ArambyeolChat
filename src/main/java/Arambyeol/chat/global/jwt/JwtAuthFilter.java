@@ -3,11 +3,9 @@ package Arambyeol.chat.global.jwt;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import Arambyeol.chat.global.dto.ErrorResponse;
+import Arambyeol.chat.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -21,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-	private static final List<String> EXCLUDE_URLS = List.of("/login", "/signUp", "/ws-stomp");
+	private static final List<String> EXCLUDE_URLS = List.of("/login", "/signUp", "/ws-stomp","/error");
 	private final JwtTokenUtil jwtTokenUtil;
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -31,7 +29,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		}
 		String token = request.getHeader("Authorization");
 		printRequestLog(request);
-		jwtTokenUtil.isValidToken(token);
+		JwtStatus status = jwtTokenUtil.isValidToken(token);
+		if(!status.equals(JwtStatus.VALID)){
+			ErrorCode errorCode = ErrorCode.INVALID_TOKEN;
+			if(status.equals(JwtStatus.EXPIRED)){
+				errorCode = ErrorCode.EXPIRED_TOKEN;
+			}
+			response.setStatus(errorCode.getStatusValue());
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			String json = new ObjectMapper().writeValueAsString(new ErrorResponse(errorCode.getStatusValue(), errorCode.getMessage()));
+			response.getWriter().write(json);
+			return;
+		}
 		filterChain.doFilter(request, response);
 	}
 

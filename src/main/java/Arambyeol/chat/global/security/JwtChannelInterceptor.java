@@ -2,6 +2,8 @@ package Arambyeol.chat.global.security;
 
 import java.util.Optional;
 
+import Arambyeol.chat.global.exception.CustomException;
+import Arambyeol.chat.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -30,21 +32,37 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		log.info("JwtChannelInterceptor - preSend 호출");
+
 		// 메세지 헤더 접근
 		StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
-		String accessToken = accessor.getFirstNativeHeader(AUTHORIZATION);
-		log.info("headers : "+accessor.toString());
-		log.info("accessToken : " + accessToken);
-		jwtTokenUtil.isValidToken(accessToken);
-		UserDetails userDetails = customUserDetailsService.loadUserByUsername(jwtTokenUtil.getDeviceId(accessToken.substring(7)));
-		if(userDetails != null) {
-			//인증 토큰 생성
-			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-			//SecurityContextHolder에 인증 정보 저장
-			SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-			log.info("인증완료");
+		if(!StompCommand.CONNECT.equals( accessor.getCommand())&&!StompCommand.SUBSCRIBE.equals( accessor.getCommand())){
+			return message;
 		}
+		String accessToken = accessor.getFirstNativeHeader(AUTHORIZATION);
+		log.info("headers : "+ accessor);
+		log.info("accessToken : " + accessToken);
+
+		if(accessToken != null && accessToken.startsWith("Bearer ")) {
+			try{
+				jwtTokenUtil.isValidToken(accessToken);
+				UserDetails userDetails = customUserDetailsService.loadUserByUsername(jwtTokenUtil.getDeviceId(accessToken.substring(7)));
+				if(userDetails != null) {
+					//인증 토큰 생성
+					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					//SecurityContextHolder에 인증 정보 저장
+					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					log.info("인증완료");
+				}
+			}catch (CustomException e){
+				log.error("error : "+e.getMessage());
+				throw new CustomException(ErrorCode.INVALID_TOKEN);
+			}
+
+		}else{
+			log.error("error : 토큰이 없습니다.");
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
 		return message;
 	}
 }
