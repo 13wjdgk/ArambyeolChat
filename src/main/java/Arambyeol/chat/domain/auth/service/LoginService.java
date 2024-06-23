@@ -1,6 +1,7 @@
 package Arambyeol.chat.domain.auth.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import Arambyeol.chat.global.exception.CustomException;
+import Arambyeol.chat.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 import Arambyeol.chat.domain.auth.dto.DeviceId;
@@ -28,14 +29,16 @@ public class LoginService {
 	public DeviceId signUp(DeviceId deviceId) {
 		try{
 			isValidDeviceId(deviceId.deviceId());
-			throw new IllegalArgumentException("Already exist device");
-		}catch (UsernameNotFoundException e) {
-			DeviceInfo deviceInfo = deviceInfoService.saveDeviceInfo(deviceId.deviceId());
-			return new DeviceId(deviceInfo.getDeviceId());
+		}catch (CustomException e) {
+			if (e.getErrorCode() != ErrorCode.NOT_FOUND_USER) {
+				DeviceInfo deviceInfo = deviceInfoService.saveDeviceInfo(deviceId.deviceId());
+				return new DeviceId(deviceInfo.getDeviceId());
+			}
 		}
+		throw new CustomException(ErrorCode.EXIST_USER);
 	}
 	public String isValidDeviceId(String deviceId) {
-		String userDeviceId = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new UsernameNotFoundException("No value deviceInfo")).getDeviceId();
+		String userDeviceId = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_USER)).getDeviceId();
 		return userDeviceId;
 	}
 	public String createAccessToken(String deviceId) {
@@ -54,6 +57,6 @@ public class LoginService {
 				return login(deviceId);
 			}
 		}
-		throw new UsernameNotFoundException("Invalid token");
+		throw new CustomException(ErrorCode.INVALID_TOKEN);
 	}
 }

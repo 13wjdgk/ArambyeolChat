@@ -1,5 +1,7 @@
 package Arambyeol.chat.domain.chat.service;
 
+import Arambyeol.chat.global.exception.CustomException;
+import Arambyeol.chat.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 import Arambyeol.chat.domain.chat.entity.DeviceInfo;
@@ -18,7 +20,7 @@ public class DeviceInfoService {
 	private final String[] characters = new String[]{"금이","지누","아람이","긱사생","별이","동식이"};
 
 	public DeviceInfo getDeviceInfo(String deviceId){
-		DeviceInfo deviceInfo = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new NoSuchElementException("No value deviceInfo"));
+		DeviceInfo deviceInfo = deviceInfoRepository.findDeviceInfoByDeviceId(deviceId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_USER));
 		return deviceInfo;
 
 	}

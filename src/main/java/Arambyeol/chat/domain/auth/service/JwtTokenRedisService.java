@@ -1,5 +1,7 @@
 package Arambyeol.chat.domain.auth.service;
 
+import Arambyeol.chat.global.exception.CustomException;
+import Arambyeol.chat.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +24,7 @@ public class JwtTokenRedisService {
 	}
 
 	public boolean isValidRefreshToken(String deviceId , String requestRefreshToken) {
-		RefreshToken refreshToken = refreshTokenRepository.findById(requestRefreshToken).orElseThrow(()->new IllegalArgumentException("Invalid RefreshToken"));
+		RefreshToken refreshToken = refreshTokenRepository.findById(requestRefreshToken).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN));
 		if(refreshToken.getDeviceId().equals(deviceId)) {
 			return true;
 		}else {
