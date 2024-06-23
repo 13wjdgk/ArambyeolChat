@@ -13,6 +13,8 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
 				.nullDestMatcher().permitAll()
 				// 특정 목적지
 				.simpDestMatchers("/pub/chat").permitAll()
+				//UNSCRIBE
+				.simpDestMatchers("/sub/ArambyeolChat").permitAll()
 				// 구독
 				.simpSubscribeDestMatchers("/sub/ArambyeolChat").permitAll()
 				.anyMessage().denyAll();
