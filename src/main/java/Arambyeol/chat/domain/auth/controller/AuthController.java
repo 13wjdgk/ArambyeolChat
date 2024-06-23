@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import Arambyeol.chat.domain.auth.dto.DeviceId;
 import Arambyeol.chat.domain.auth.dto.JwtToken;
-import Arambyeol.chat.domain.chat.dto.SuccessSingleResponse;
+import Arambyeol.chat.global.dto.SuccessSingleResponse;
 import Arambyeol.chat.domain.auth.service.LoginService;
 import lombok.RequiredArgsConstructor;
 

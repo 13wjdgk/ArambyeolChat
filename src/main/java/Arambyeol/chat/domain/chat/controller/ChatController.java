@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import Arambyeol.chat.domain.chat.dto.ReceiveMessage;
 import Arambyeol.chat.domain.chat.dto.ReportChat;
 import Arambyeol.chat.domain.chat.dto.SendMessage;
-import Arambyeol.chat.domain.chat.dto.SuccessSingleResponse;
+import Arambyeol.chat.global.dto.SuccessSingleResponse;
 import Arambyeol.chat.domain.chat.entity.DeviceInfo;
 import Arambyeol.chat.domain.chat.entity.Report;
 import Arambyeol.chat.domain.chat.service.ChatService;
