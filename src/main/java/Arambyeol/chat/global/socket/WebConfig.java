@@ -1,4 +1,4 @@
-package Arambyeol.chat.domain.chat.config;
+package Arambyeol.chat.global.socket;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
