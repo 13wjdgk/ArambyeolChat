@@ -53,6 +53,10 @@ dependencies {
 
 	//spring security messaging
 	implementation 'org.springframework.security:spring-security-messaging'
+	//netty
+	implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
+	// ActiveMQ
+	implementation 'org.springframework.boot:spring-boot-starter-activemq'
 
 
 }
