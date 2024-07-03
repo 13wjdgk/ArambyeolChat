@@ -30,7 +30,7 @@ public class LoginService {
 		try{
 			isValidDeviceId(deviceId.deviceId());
 		}catch (CustomException e) {
-			if (e.getErrorCode() != ErrorCode.NOT_FOUND_USER) {
+			if (e.getErrorCode() == ErrorCode.NOT_FOUND_USER) {
 				DeviceInfo deviceInfo = deviceInfoService.saveDeviceInfo(deviceId.deviceId());
 				return new DeviceId(deviceInfo.getDeviceId());
 			}
