@@ -31,9 +31,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		registry.enableStompBrokerRelay("/sub")
 			.setRelayHost(host).setRelayPort(port)
 			.setSystemLogin(user).setSystemPasscode(password)
-			.setClientLogin(user).setClientPasscode(password);
+			.setClientLogin(user).setClientPasscode(password)
+			.setUserDestinationBroadcast("/receipt");
+
 		// 메세지 발행 요청 prefix, /pub으로 시작하는 메세지만 해당 Broker에서 받아와서 처리한다.
 		registry.setApplicationDestinationPrefixes("/pub");
+
 	}
 
 	@Override

@@ -5,11 +5,19 @@ import java.util.Optional;
 import Arambyeol.chat.global.exception.CustomException;
 import Arambyeol.chat.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.ExecutorChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +32,10 @@ import lombok.RequiredArgsConstructor;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class JwtChannelInterceptor implements ChannelInterceptor {
+public class JwtChannelInterceptor implements ExecutorChannelInterceptor {
+	@Autowired
+	@Lazy
+	private SimpMessagingTemplate messagingTemplate;
 	private final String AUTHORIZATION = "Authorization";
 	private final JwtTokenUtil jwtTokenUtil;
 	private final CustomUserDetailsService customUserDetailsService;
@@ -64,5 +75,32 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 		}
 
 		return message;
+	}
+
+	@Override
+	public void afterSendCompletion(Message<?> message, MessageChannel channel, boolean sent, Exception ex) {
+		StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+		if (sent&&accessor.getCommand().equals(StompCommand.SEND)) {
+			sendReceipt(message);
+		}
+	}
+
+	private void sendReceipt(Message<?> message) {
+		StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+
+		if (accessor != null) {
+			String sessionId = accessor.getSessionId();
+			// RECEIPT 프레임 생성
+			if (sessionId != null ) {
+				String receiptMessage = "RECEIPT Message " ;
+				messagingTemplate.convertAndSendToUser(sessionId, "/receipt", receiptMessage,createHeaders(sessionId));
+			}
+		}
+	}
+	private MessageHeaders createHeaders(String sessionId) {
+		StompHeaderAccessor headerAccessor = StompHeaderAccessor.create(StompCommand.MESSAGE);
+		if (sessionId != null) headerAccessor.setSessionId(sessionId);
+		headerAccessor.setLeaveMutable(true);
+		return headerAccessor.getMessageHeaders();
 	}
 }
