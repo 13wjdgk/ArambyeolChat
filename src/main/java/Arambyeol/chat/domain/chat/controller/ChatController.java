@@ -3,9 +3,12 @@ package Arambyeol.chat.domain.chat.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 
@@ -37,8 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RestController
 public class ChatController {
-	@Autowired
-	private final SimpMessagingTemplate simpMessagingTemplate;
+	private final RabbitTemplate template;
+	private final static String CHAT_EXCHANGE_NAME = "chat.exchange";
+
 	private final DeviceInfoService deviceInfoService;
 	private final ReportService reportService;
 	private final ChatService chatService;
@@ -55,12 +59,12 @@ public class ChatController {
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), null));
 	}
 
-	@MessageMapping("/chat")
-	@SendTo("/sub/ArambyeolChat")
-	public ResponseEntity<SuccessSingleResponse<ReceiveMessage>> chat(@RequestBody SendMessage message ){
+
+	@MessageMapping("chat.message.{chatType}")
+	public void chat(@RequestBody SendMessage message , @DestinationVariable String chatType){
 		ReceiveMessage receiveMessage = chatService.createChatMessage(message);
 		log.info("message 전달 : "+receiveMessage.toString());
-		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), receiveMessage));
+		template.convertAndSend("amq.topic", "type." + chatType, receiveMessage); //topic
 	}
 
 	@GetMapping("/chatList")

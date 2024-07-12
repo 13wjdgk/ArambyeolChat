@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -27,15 +28,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry registry){
-		//해당 prefix를 구독하는 클라이언트에게 메세지를 보낸다.
-		registry.enableStompBrokerRelay("/sub")
-			.setRelayHost(host).setRelayPort(port)
-			.setSystemLogin(user).setSystemPasscode(password)
-			.setClientLogin(user).setClientPasscode(password)
-			.setUserDestinationBroadcast("/receipt");
-
-		// 메세지 발행 요청 prefix, /pub으로 시작하는 메세지만 해당 Broker에서 받아와서 처리한다.
-		registry.setApplicationDestinationPrefixes("/pub");
+		registry.setPathMatcher(new AntPathMatcher("."));
+		registry.setApplicationDestinationPrefixes("/pub")
+			.enableStompBrokerRelay("/queue", "/topic", "/exchange", "/amq/queue")
+			.setRelayHost("localhost")
+			.setVirtualHost("/")
+			.setRelayPort(61613)
+			.setClientLogin("guest")
+			.setClientPasscode("guest")
+			.setSystemLogin("guest")
+			.setSystemPasscode("guest");
 
 	}
 
