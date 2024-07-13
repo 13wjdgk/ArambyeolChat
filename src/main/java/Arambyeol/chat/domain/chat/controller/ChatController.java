@@ -3,16 +3,16 @@ package Arambyeol.chat.domain.chat.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class ChatController {
 	private final RabbitTemplate template;
-	private final static String CHAT_EXCHANGE_NAME = "chat.exchange";
+	private final SimpMessagingTemplate messagingTemplate;
 
 	private final DeviceInfoService deviceInfoService;
 	private final ReportService reportService;
@@ -59,10 +59,15 @@ public class ChatController {
 		return ResponseEntity.ok().body(new SuccessSingleResponse<>(HttpStatus.OK.getReasonPhrase(), null));
 	}
 
-
 	@MessageMapping("chat.message.{chatType}")
-	public void chat(@RequestBody SendMessage message , @DestinationVariable String chatType){
+	public void chat(@RequestBody SendMessage message , @DestinationVariable String chatType , SimpMessageHeaderAccessor headerAccessor){
 		ReceiveMessage receiveMessage = chatService.createChatMessage(message);
+		String receiptId = headerAccessor.getFirstNativeHeader("receipt");
+		if (receiptId != null) {
+			StompHeaderAccessor stompHeaderAccessor = StompHeaderAccessor.create(StompCommand.SEND);
+			stompHeaderAccessor.setReceiptId(receiptId);
+			messagingTemplate.convertAndSend("/queue/type.receipt-user"+headerAccessor.getSessionId(),"",stompHeaderAccessor.getMessageHeaders());
+		}
 		log.info("message 전달 : "+receiveMessage.toString());
 		template.convertAndSend("amq.topic", "type." + chatType, receiveMessage); //topic
 	}
